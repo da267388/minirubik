@@ -29,7 +29,10 @@
 #endif
 
 #ifdef OPCOUNT
-opc_t opc;
+
+opc_t opc = {
+    .descended = 1
+};
 #endif
 
 static const uint8_t move_face[9] = {0, 0, 0, 1, 1, 1, 2, 2, 2};
