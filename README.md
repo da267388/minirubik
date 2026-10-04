@@ -1,8 +1,10 @@
 # minirubik
 
-An optimal C99 solver for the 2×2×2 Rubik’s Cube. It builds a breadth-first
-table for all 3,674,160 states and solves every valid position in at most 11
-half-turn-metric moves.
+An optimal C99 solver for the 2×2×2 Rubik’s Cube.
+
+Originally built around a massive breadth-first search table, this project has been completely re-architected to run in severely constrained environments (specifically, the RV32_ISS simulator). It solves every valid position in at most 11 half-turn-metric moves while strictly adhering to a **$\le$ 128 KiB static memory limit** and a **$\le$ 5×10⁷ retired instructions** budget.
+
+To achieve this, the solver relies on **Iterative Deepening A* (IDA*)**, guided by **two complementary 4-cubie Pattern Databases (PDBs)**. By taking the maximum heuristic value of the two PDBs and compressing the data using **nibble packing**, the solver achieves aggressive pruning within a tiny memory footprint.
 
 ## Why a cube is a graph
 
@@ -23,30 +25,40 @@ the article’s 3×3 Roux stages or a library of memorized algorithms.
 The solver gives the eight corner positions the numbers `0–7`. The 2.5D
 walkthrough below shows where those numbers are on the physical cube.
 
-## How it works
+## Project Structure
 
-1. Fix one corner to remove whole-cube rotations.
-2. Rank the remaining corner permutation and six independent orientations into
-   a dense integer.
-3. Breadth-first search outward from solved using `R`, `B`, and `D`, including
-   inverse and half turns.
-4. Store one move toward solved for every state; following those moves gives an
-   optimal solution of at most 11 moves.
+The codebase strictly separates the host-side generator tools from the freestanding target (guest) core:
 
-## Build and run
+*   `common/cube_model.h` - Host model (source/twist from original solver), rank/unrank, x[7] view.
+*   `c/pdb_spec.h` - **SINGLE SOURCE OF TRUTH**: cubie sets, index routines, nibble get/set.
+*   `c/solver_core.[ch]` - Freestanding IDA* core (no libc, no heap, explicit stack).
+*   `c/tables.h` - **GENERATED** by `tools/gen_tables.c` (Contains Quarter-Turn tables & 2 x 34,020 B PDBs).
+*   `c/main_host.c` - Host CLI; re-verifies the path with the independent model.
+*   `c/opcount.h` - `-DOPCOUNT` counters for profiling.
+*   `host/oracle.c` - Exact BFS to build ground-truth `dist.bin`, `d11.txt`, and `samples_d8_10.txt`.
+*   `tools/gen_tables.c` - Abstract-space BFS to generate `c/tables.h` (H2 checks built-in).
+*   `tools/node_stats.c` - Per-state op counts, percentiles, and instruction-budget estimation.
+*   `tools/pdb_select.c` - Design sweep over all 4-cubie subsets / pairs to find the optimal heuristic.
+*   `tests/h0..h4` - Correctness gates (model, admissibility, tables, optimality, nibble).
+
+## Build and Run
 
 ```sh
-make
-make check
-make prove   # optional: Frama-C WP proof, needs frama-c and alt-ergo
-./solver 21345671111111
-```
+# Core workflow
+make check       # Run all gates except full H3
+make h3          # Run full optimality check (~1 min/core)
 
-`make` builds two binaries. `solver` is the documented one, with contracts, a
-`--self-test` mode, and diagnostics on stderr. `mini` is a golfed variant that
-solves the same input and prints the same line, kept as a readability contrast;
-it has no `--self-test` and prints nothing on failure, and it trades roughly
-eight times the runtime and three times the memory for its brevity.
+# Profiling and Analysis
+make stats       # Evaluate PDB heuristic strength and node counts
+make select      # Run design sweep for PDB subset selection
+
+# Target Environment Preparation
+make size        # Verify static data (.rodata + .data + .bss) <= 131,072 bytes
+make rv32-check  # Cross-compile and verify (requires riscv64-unknown-elf-gcc)
+
+# Manual Execution
+./solver 21345671111111
+
 
 The 14-digit argument describes the scramble and the printed line is the
 solution. Both formats are explained below.
