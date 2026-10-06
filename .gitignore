@@ -3,3 +3,17 @@
 *.swp
 solver
 mini
+Makefile_
+bench/out/
+out/
+tools/sh/
+build/
+*.o
+*.out
+*.elf
+*.a
+*.csv
+*.log
+d11.csv
+d8_10.csv
+c/tables.h
