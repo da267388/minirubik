@@ -37,7 +37,7 @@
 
 
 
-state: .string "21345671111111"
+state: .string "14325671111111"
 
 
 
@@ -115,7 +115,7 @@ taken:
 
 # t4 = f
 
-# t5 = scratch
+# t5  = scratch
 
 # t6 = g
 
@@ -335,22 +335,22 @@ parse_mod_done:
     slli s9, s8, 1
     add s8, s8, s9
     andi s9, s7, 3
-    add s8, s8, s9
+    add s8, s8, s9 # o
     srli s4, s4, 2
     srli s5, s5, 2
     srli s6, s6, 2
-    srli s7, s7, 2
+    srli a0, s7, 2 # A3 = B1
     sltu s9, s4, s5
     sub s9, s5, s9
     sltu s11, s4, s6
     sub s10, s6, s11
     sltu s11, s5, s6
     sub s10, s10, s11
-    sltu a6, s4, s7
-    sub s11, s7, a6
-    sltu a6, s5, s7
+    sltu a6, s4, a0
+    sub s11, a0, a6
+    sltu a6, s5, a0
     sub s11, s11, a6
-    sltu a6, s6, s7
+    sltu a6, s6, a0
     sub s11, s11, a6
     slli a6, s4, 2
     add s9, s9, a6
@@ -385,13 +385,13 @@ parse_mod_done:
 
     # ---- BEGIN INLINE h_b (s0 -> a6) ----
     lbu s4, B0(s0)
-    lbu s5, B1(s0)
+    # lbu s5, B1(s0)
     lbu s6, B2(s0)
-    lbu s7, B3(s0)
+    lbu s5, B3(s0)
     andi s8, s4, 3
     slli s9, s8, 1
     add s8, s8, s9
-    andi s9, s5, 3
+    andi s9, s7, 3 // B1
     add s8, s8, s9
     slli s9, s8, 1
     add s8, s8, s9
@@ -399,23 +399,23 @@ parse_mod_done:
     add s8, s8, s9
     slli s9, s8, 1
     add s8, s8, s9
-    andi s9, s7, 3
+    andi s9, s5, 3
     add s8, s8, s9
     srli s4, s4, 2
-    srli s5, s5, 2
+    # srli s5, s5, 2
     srli s6, s6, 2
-    srli s7, s7, 2
-    sltu s9, s4, s5
-    sub s9, s5, s9
+    srli s5, s5, 2
+    sltu s9, s4, a0
+    sub s9, a0, s9
     sltu s11, s4, s6
     sub s10, s6, s11
-    sltu s11, s5, s6
+    sltu s11, a0, s6
     sub s10, s10, s11
-    sltu a6, s4, s7
-    sub s11, s7, a6
-    sltu a6, s5, s7
+    sltu a6, s4, s5
+    sub s11, s5, a6
+    sltu a6, a0, s5
     sub s11, s11, a6
-    sltu a6, s6, s7
+    sltu a6, s6, s5
     sub s11, s11, a6
     slli a6, s4, 2
     add s9, s9, a6
@@ -650,115 +650,69 @@ move:
 
 turn_begin:
 
+    # s1 = QT base
+    # t4 = face
+    # t5 = dst
+    # t6 = src
+
     # QT + face*32
 
-    slli s4, t4, 5
+    slli a7, t4, 5
 
-    add s4, s1, s4
-
-
+    add a7, s1, a7
 
     # turn(dst, src, face)
 
     # Seven independent byte transformations.
 
 
+    # s4 = st[d+1][0]
+    
+    lbu s4, 0(t6)
 
-    lbu a6, 0(t6)
+    add s4, a7, s4
 
-    add a6, s4, a6
+    lbu s4, 0(s4)
 
-    lbu a6, 0(a6)
-
-    sb a6, 0(t5)
-
-
-
-    lbu a6, 1(t6)
-
-    add a6, s4, a6
-
-    lbu a6, 0(a6)
-
-    sb a6, 1(t5)
+    sb s4, 0(t5)
 
 
+    # s5 = st[d+1][1]
 
-    lbu a6, 2(t6)
+    lbu s5, 1(t6)
 
-    add a6, s4, a6
+    add s5, a7, s5
 
-    lbu a6, 0(a6)
+    lbu s5, 0(s5)
 
-    sb a6, 2(t5)
-
-
-
-    lbu a6, 3(t6)
-
-    add a6, s4, a6
-
-    lbu a6, 0(a6)
-
-    sb a6, 3(t5)
+    sb s5, 1(t5)
 
 
+    # s6 = st[d+1][3]
 
-    lbu a6, 4(t6)
+    lbu s6, 3(t6)
 
-    add a6, s4, a6
+    add s6, a7, s6
 
-    lbu a6, 0(a6)
+    lbu s6, 0(s6)
 
-    sb a6, 4(t5)
-
-
-
-    lbu a6, 5(t6)
-
-    add a6, s4, a6
-
-    lbu a6, 0(a6)
-
-    sb a6, 5(t5)
+    sb s6, 3(t5)
 
 
+    # s7 = st[d+1][4]
 
-    lbu a6, 6(t6)
+    lbu s7, 4(t6)
 
-    add a6, s4, a6
+    add s7, a7, s7
 
-    lbu a6, 0(a6)
+    lbu s7, 0(s7)
 
-    sb a6, 6(t5)
-
-
-
-    # --------------------------------------------------------
-
-    # Lazy PDB evaluation
-
-    #
-
-    # g = d + 1
-
-    # --------------------------------------------------------
-
-
-
-    addi t6, t2, 1
-
+    sb s7, 4(t5)
 
 
     # h_a(child)
 
-    # mv a0, t5
-
-    # ---- BEGIN INLINE h_a (t5 -> a6) ----
-    lbu s4, A0(t5)
-    lbu s5, A1(t5)
-    lbu s6, A2(t5)
-    lbu s7, A3(t5)
+    # ---- BEGIN INLINE h_a (-> a6) ----
     andi s8, s4, 3
     slli s9, s8, 1
     add s8, s8, s9
@@ -775,18 +729,18 @@ turn_begin:
     srli s4, s4, 2
     srli s5, s5, 2
     srli s6, s6, 2
-    srli s7, s7, 2
+    srli a0, s7, 2
     sltu s9, s4, s5
     sub s9, s5, s9
     sltu s11, s4, s6
     sub s10, s6, s11
     sltu s11, s5, s6
     sub s10, s10, s11
-    sltu a6, s4, s7
-    sub s11, s7, a6
-    sltu a6, s5, s7
+    sltu a6, s4, a0
+    sub s11, a0, a6
+    sltu a6, s5, a0
     sub s11, s11, a6
-    sltu a6, s6, s7
+    sltu a6, s6, a0
     sub s11, s11, a6
     slli a6, s4, 2
     add s9, s9, a6
@@ -808,38 +762,77 @@ turn_begin:
     andi s10, s8, 1
     slli s10, s10, 2
     srl s9, s9, s10
-    andi a7, s9, 15
+    andi a6, s9, 15
     # ---- END INLINE h_a ----
 
 
 
-    # a7 = ha
+    # turn(dst, src, face)
 
-    # mv a7, a6
+    # s4 = st[d+1][2]
 
+    lbu s4, 2(t6)
+
+    add s4, a7, s4
+
+    lbu s4, 0(s4)
+
+    sb s4, 2(t5)
+
+
+    # s6 = st[d+1][5]
+
+    lbu s6, 5(t6)
+
+    add s6, a7, s6
+
+    lbu s6, 0(s6)
+
+    sb s6, 5(t5)
+
+
+    # s5 = st[d+1][6]
+
+    lbu s5, 6(t6)
+
+    add s5, a7, s5
+
+    lbu s5, 0(s5)
+
+    sb s5, 6(t5)
+
+
+    # --------------------------------------------------------
+
+    # Lazy PDB evaluation
+
+    #
+
+    # g = d + 1
+
+    # --------------------------------------------------------
+
+
+    # t6 = g
+
+    addi t6, t2, 1
 
 
     # if (g + ha > bound) continue
 
-    add s4, t6, a7
+    add s8, t6, a6
 
-    bltu t0, s4, dfsloop
+    bltu t0, s8, dfsloop
 
 
 
     # h_b(child)
 
-    # t5 remains child pointer
-
-    # ---- BEGIN INLINE h_b (t5 -> a6) ----
-    lbu s4, B0(t5)
-    lbu s5, B1(t5)
-    lbu s6, B2(t5)
-    lbu s7, B3(t5)
+    # ---- BEGIN INLINE h_b (-> a7) ----
     andi s8, s4, 3
     slli s9, s8, 1
     add s8, s8, s9
-    andi s9, s5, 3
+    andi s9, s7, 3
     add s8, s8, s9
     slli s9, s8, 1
     add s8, s8, s9
@@ -847,37 +840,36 @@ turn_begin:
     add s8, s8, s9
     slli s9, s8, 1
     add s8, s8, s9
-    andi s9, s7, 3
+    andi s9, s5, 3
     add s8, s8, s9
     srli s4, s4, 2
-    srli s5, s5, 2
     srli s6, s6, 2
-    srli s7, s7, 2
-    sltu s9, s4, s5
-    sub s9, s5, s9
+    srli s5, s5, 2
+    sltu s9, s4, a0
+    sub s9, a0, s9
     sltu s11, s4, s6
     sub s10, s6, s11
-    sltu s11, s5, s6
+    sltu s11, a0, s6
     sub s10, s10, s11
-    sltu a6, s4, s7
-    sub s11, s7, a6
-    sltu a6, s5, s7
-    sub s11, s11, a6
-    sltu a6, s6, s7
-    sub s11, s11, a6
-    slli a6, s4, 2
-    add s9, s9, a6
-    slli a6, s4, 1
-    add s9, s9, a6
-    slli a6, s9, 2
-    add s9, s9, a6
+    sltu a7, s4, s5
+    sub s11, s5, a7
+    sltu a7, a0, s5
+    sub s11, s11, a7
+    sltu a7, s6, s5
+    sub s11, s11, a7
+    slli a7, s4, 2
+    add s9, s9, a7
+    slli a7, s4, 1
+    add s9, s9, a7
+    slli a7, s9, 2
+    add s9, s9, a7
     add s9, s9, s10
     slli s9, s9, 2
     add s9, s9, s11
-    slli a6, s9, 6
-    add s8, s8, a6
-    slli a6, s9, 4
-    add s8, s8, a6
+    slli a7, s9, 6
+    add s8, s8, a7
+    slli a7, s9, 4
+    add s8, s8, a7
     add s8, s8, s9
     srli s9, s8, 1
     add s9, s3, s9
@@ -885,14 +877,14 @@ turn_begin:
     andi s10, s8, 1
     slli s10, s10, 2
     srl s9, s9, s10
-    andi a6, s9, 15
+    andi a7, s9, 15
     # ---- END INLINE h_b ----
 
 
 
     # if (g + hb > bound) continue
 
-    add t5, t6, a6
+    add t5, t6, a7
 
     bltu t0, t5, dfsloop
 
@@ -900,7 +892,7 @@ turn_begin:
 
     # if ((ha | hb) == 0) found
 
-    or t5, a7, a6
+    or t5, a6, a7
 
     beqz t5, found
 
