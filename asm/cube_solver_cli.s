@@ -37,7 +37,7 @@
 
 
 
-state: .string "21345671111111"
+state: .string "14325671111111 "
 
 
 
@@ -425,18 +425,21 @@ dfsloop:
 
     # previous face = last_face[d]
 
-    add t5, a1, t2
+    add t6, a1, t2
 
-    lbu t5, 0(t5)
+    lbu t6, 0(t6)
 
 
 
     # if same face, m += 3
 
-    bne t4, t5, check_exhausted
+    bne t4, t6, check_exhausted
 
     addi t3, t3, 3
 
+    # f = move_face[m]
+
+    lbu t4, 3(t5)
 
 
 check_exhausted:
@@ -491,17 +494,17 @@ move:
 
     add t5, a2, t2
 
-    addi t4, t3, 1
+    addi a6, t3, 1
 
-    sb t4, 0(t5)
+    sb a6, 0(t5)
 
 
 
     # f = move_face[m]
 
-    add t5, a3, t3
+    # add t5, a3, t3
 
-    lbu t4, 0(t5)
+    # lbu t4, 0(t5)
 
 
 
