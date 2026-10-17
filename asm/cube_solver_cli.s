@@ -37,7 +37,7 @@
 
 
 
-state: .string "14325671111111 "
+state: .string "21345671111111"
 
 
 
@@ -125,7 +125,7 @@ taken:
 
 #
 
-# h_a / h_b:
+# h_a / h_b are directly inlined in the initial bound and DFS:
 
 #   input a0 = state pointer
 
@@ -137,7 +137,8 @@ taken:
 
 #
 
-# IMPORTANT: custom internal calling convention.
+# IMPORTANT: inline heuristic modifies s4-s11 and a6; preserves a0 and a7.
+# No heuristic call/ret executes on the DFS hot path.
 
 # ============================================================
 
@@ -317,7 +318,62 @@ parse_mod_done:
 
     mv a0, s0
 
-    call h_a
+    # ---- BEGIN INLINE h_a (a0 -> a6) ----
+    lbu s4, A0(a0)
+    lbu s5, A1(a0)
+    lbu s6, A2(a0)
+    lbu s7, A3(a0)
+    andi s8, s4, 3
+    slli s9, s8, 1
+    add s8, s8, s9
+    andi s9, s5, 3
+    add s8, s8, s9
+    slli s9, s8, 1
+    add s8, s8, s9
+    andi s9, s6, 3
+    add s8, s8, s9
+    slli s9, s8, 1
+    add s8, s8, s9
+    andi s9, s7, 3
+    add s8, s8, s9
+    srli s4, s4, 2
+    srli s5, s5, 2
+    srli s6, s6, 2
+    srli s7, s7, 2
+    sltu s9, s4, s5
+    sub s9, s5, s9
+    sltu s11, s4, s6
+    sub s10, s6, s11
+    sltu s11, s5, s6
+    sub s10, s10, s11
+    sltu a6, s4, s7
+    sub s11, s7, a6
+    sltu a6, s5, s7
+    sub s11, s11, a6
+    sltu a6, s6, s7
+    sub s11, s11, a6
+    slli a6, s4, 2
+    add s9, s9, a6
+    slli a6, s4, 1
+    add s9, s9, a6
+    slli a6, s9, 2
+    add s9, s9, a6
+    add s9, s9, s10
+    slli s9, s9, 2
+    add s9, s9, s11
+    slli a6, s9, 6
+    add s8, s8, a6
+    slli a6, s9, 4
+    add s8, s8, a6
+    add s8, s8, s9
+    srli s9, s8, 1
+    add s9, s2, s9
+    lbu s9, 0(s9)
+    andi s10, s8, 1
+    slli s10, s10, 2
+    srl s9, s9, s10
+    andi a6, s9, 15
+    # ---- END INLINE h_a ----
 
 
 
@@ -327,7 +383,62 @@ parse_mod_done:
 
     # a0 still points to st[0]
 
-    call h_b
+    # ---- BEGIN INLINE h_b (a0 -> a6) ----
+    lbu s4, B0(a0)
+    lbu s5, B1(a0)
+    lbu s6, B2(a0)
+    lbu s7, B3(a0)
+    andi s8, s4, 3
+    slli s9, s8, 1
+    add s8, s8, s9
+    andi s9, s5, 3
+    add s8, s8, s9
+    slli s9, s8, 1
+    add s8, s8, s9
+    andi s9, s6, 3
+    add s8, s8, s9
+    slli s9, s8, 1
+    add s8, s8, s9
+    andi s9, s7, 3
+    add s8, s8, s9
+    srli s4, s4, 2
+    srli s5, s5, 2
+    srli s6, s6, 2
+    srli s7, s7, 2
+    sltu s9, s4, s5
+    sub s9, s5, s9
+    sltu s11, s4, s6
+    sub s10, s6, s11
+    sltu s11, s5, s6
+    sub s10, s10, s11
+    sltu a6, s4, s7
+    sub s11, s7, a6
+    sltu a6, s5, s7
+    sub s11, s11, a6
+    sltu a6, s6, s7
+    sub s11, s11, a6
+    slli a6, s4, 2
+    add s9, s9, a6
+    slli a6, s4, 1
+    add s9, s9, a6
+    slli a6, s9, 2
+    add s9, s9, a6
+    add s9, s9, s10
+    slli s9, s9, 2
+    add s9, s9, s11
+    slli a6, s9, 6
+    add s8, s8, a6
+    slli a6, s9, 4
+    add s8, s8, a6
+    add s8, s8, s9
+    srli s9, s8, 1
+    add s9, s3, s9
+    lbu s9, 0(s9)
+    andi s10, s8, 1
+    slli s10, s10, 2
+    srl s9, s9, s10
+    andi a6, s9, 15
+    # ---- END INLINE h_b ----
 
 
 
@@ -442,6 +553,7 @@ dfsloop:
     lbu t4, 3(t5)
 
 
+
 check_exhausted:
 
     li t5, 9
@@ -497,14 +609,6 @@ move:
     addi a6, t3, 1
 
     sb a6, 0(t5)
-
-
-
-    # f = move_face[m]
-
-    # add t5, a3, t3
-
-    # lbu t4, 0(t5)
 
 
 
@@ -652,7 +756,62 @@ turn_begin:
 
     mv a0, t5
 
-    call h_a
+    # ---- BEGIN INLINE h_a (a0 -> a6) ----
+    lbu s4, A0(a0)
+    lbu s5, A1(a0)
+    lbu s6, A2(a0)
+    lbu s7, A3(a0)
+    andi s8, s4, 3
+    slli s9, s8, 1
+    add s8, s8, s9
+    andi s9, s5, 3
+    add s8, s8, s9
+    slli s9, s8, 1
+    add s8, s8, s9
+    andi s9, s6, 3
+    add s8, s8, s9
+    slli s9, s8, 1
+    add s8, s8, s9
+    andi s9, s7, 3
+    add s8, s8, s9
+    srli s4, s4, 2
+    srli s5, s5, 2
+    srli s6, s6, 2
+    srli s7, s7, 2
+    sltu s9, s4, s5
+    sub s9, s5, s9
+    sltu s11, s4, s6
+    sub s10, s6, s11
+    sltu s11, s5, s6
+    sub s10, s10, s11
+    sltu a6, s4, s7
+    sub s11, s7, a6
+    sltu a6, s5, s7
+    sub s11, s11, a6
+    sltu a6, s6, s7
+    sub s11, s11, a6
+    slli a6, s4, 2
+    add s9, s9, a6
+    slli a6, s4, 1
+    add s9, s9, a6
+    slli a6, s9, 2
+    add s9, s9, a6
+    add s9, s9, s10
+    slli s9, s9, 2
+    add s9, s9, s11
+    slli a6, s9, 6
+    add s8, s8, a6
+    slli a6, s9, 4
+    add s8, s8, a6
+    add s8, s8, s9
+    srli s9, s8, 1
+    add s9, s2, s9
+    lbu s9, 0(s9)
+    andi s10, s8, 1
+    slli s10, s10, 2
+    srl s9, s9, s10
+    andi a6, s9, 15
+    # ---- END INLINE h_a ----
 
 
 
@@ -674,7 +833,62 @@ turn_begin:
 
     # a0 remains child pointer
 
-    call h_b
+    # ---- BEGIN INLINE h_b (a0 -> a6) ----
+    lbu s4, B0(a0)
+    lbu s5, B1(a0)
+    lbu s6, B2(a0)
+    lbu s7, B3(a0)
+    andi s8, s4, 3
+    slli s9, s8, 1
+    add s8, s8, s9
+    andi s9, s5, 3
+    add s8, s8, s9
+    slli s9, s8, 1
+    add s8, s8, s9
+    andi s9, s6, 3
+    add s8, s8, s9
+    slli s9, s8, 1
+    add s8, s8, s9
+    andi s9, s7, 3
+    add s8, s8, s9
+    srli s4, s4, 2
+    srli s5, s5, 2
+    srli s6, s6, 2
+    srli s7, s7, 2
+    sltu s9, s4, s5
+    sub s9, s5, s9
+    sltu s11, s4, s6
+    sub s10, s6, s11
+    sltu s11, s5, s6
+    sub s10, s10, s11
+    sltu a6, s4, s7
+    sub s11, s7, a6
+    sltu a6, s5, s7
+    sub s11, s11, a6
+    sltu a6, s6, s7
+    sub s11, s11, a6
+    slli a6, s4, 2
+    add s9, s9, a6
+    slli a6, s4, 1
+    add s9, s9, a6
+    slli a6, s9, 2
+    add s9, s9, a6
+    add s9, s9, s10
+    slli s9, s9, 2
+    add s9, s9, s11
+    slli a6, s9, 6
+    add s8, s8, a6
+    slli a6, s9, 4
+    add s8, s8, a6
+    add s8, s8, s9
+    srli s9, s8, 1
+    add s9, s3, s9
+    lbu s9, 0(s9)
+    andi s10, s8, 1
+    slli s10, s10, 2
+    srl s9, s9, s10
+    andi a6, s9, 15
+    # ---- END INLINE h_b ----
 
 
 
@@ -842,386 +1056,6 @@ SOLVE_E_BOUND:
     li a7, 93
 
     ecall
-
-
-
-# ============================================================
-
-# h_a
-
-#
-
-# input:  a0 = state pointer
-
-# output: a6 = heuristic A
-
-#
-
-# s2 = PDB_A base
-
-# ============================================================
-
-
-
-h_a:
-
-    lbu s4, A0(a0)
-
-    lbu s5, A1(a0)
-
-    lbu s6, A2(a0)
-
-    lbu s7, A3(a0)
-
-
-
-    # orientation index
-
-    andi s8, s4, 3
-
-
-
-    slli s9, s8, 1
-
-    add s8, s8, s9
-
-    andi s9, s5, 3
-
-    add s8, s8, s9
-
-
-
-    slli s9, s8, 1
-
-    add s8, s8, s9
-
-    andi s9, s6, 3
-
-    add s8, s8, s9
-
-
-
-    slli s9, s8, 1
-
-    add s8, s8, s9
-
-    andi s9, s7, 3
-
-    add s8, s8, s9
-
-
-
-    # positions
-
-    srli s4, s4, 2
-
-    srli s5, s5, 2
-
-    srli s6, s6, 2
-
-    srli s7, s7, 2
-
-
-
-    # b1
-
-    sltu s9, s4, s5
-
-    sub s9, s5, s9
-
-
-
-    # c1
-
-    sltu s11, s4, s6
-
-    sub s10, s6, s11
-
-
-
-    sltu s11, s5, s6
-
-    sub s10, s10, s11
-
-
-
-    # d1
-
-    sltu a6, s4, s7
-
-    sub s11, s7, a6
-
-
-
-    sltu a6, s5, s7
-
-    sub s11, s11, a6
-
-
-
-    sltu a6, s6, s7
-
-    sub s11, s11, a6
-
-
-
-    # permutation rank
-
-    slli a6, s4, 2
-
-    add s9, s9, a6
-
-
-
-    slli a6, s4, 1
-
-    add s9, s9, a6
-
-
-
-    slli a6, s9, 2
-
-    add s9, s9, a6
-
-
-
-    add s9, s9, s10
-
-    slli s9, s9, 2
-
-    add s9, s9, s11
-
-
-
-    # index = permutation * 81 + orientation
-
-    slli a6, s9, 6
-
-    add s8, s8, a6
-
-
-
-    slli a6, s9, 4
-
-    add s8, s8, a6
-
-
-
-    add s8, s8, s9
-
-
-
-    # nibble-packed PDB lookup
-
-    srli s9, s8, 1
-
-    add s9, s2, s9
-
-    lbu s9, 0(s9)
-
-
-
-    andi s10, s8, 1
-
-    slli s10, s10, 2
-
-    srl s9, s9, s10
-
-
-
-    andi a6, s9, 15
-
-    ret
-
-
-
-# ============================================================
-
-# h_b
-
-#
-
-# input:  a0 = state pointer
-
-# output: a6 = heuristic B
-
-#
-
-# s3 = PDB_B base
-
-# ============================================================
-
-
-
-h_b:
-
-    lbu s4, B0(a0)
-
-    lbu s5, B1(a0)
-
-    lbu s6, B2(a0)
-
-    lbu s7, B3(a0)
-
-
-
-    # orientation index
-
-    andi s8, s4, 3
-
-
-
-    slli s9, s8, 1
-
-    add s8, s8, s9
-
-    andi s9, s5, 3
-
-    add s8, s8, s9
-
-
-
-    slli s9, s8, 1
-
-    add s8, s8, s9
-
-    andi s9, s6, 3
-
-    add s8, s8, s9
-
-
-
-    slli s9, s8, 1
-
-    add s8, s8, s9
-
-    andi s9, s7, 3
-
-    add s8, s8, s9
-
-
-
-    # positions
-
-    srli s4, s4, 2
-
-    srli s5, s5, 2
-
-    srli s6, s6, 2
-
-    srli s7, s7, 2
-
-
-
-    # b1
-
-    sltu s9, s4, s5
-
-    sub s9, s5, s9
-
-
-
-    # c1
-
-    sltu s11, s4, s6
-
-    sub s10, s6, s11
-
-
-
-    sltu s11, s5, s6
-
-    sub s10, s10, s11
-
-
-
-    # d1
-
-    sltu a6, s4, s7
-
-    sub s11, s7, a6
-
-
-
-    sltu a6, s5, s7
-
-    sub s11, s11, a6
-
-
-
-    sltu a6, s6, s7
-
-    sub s11, s11, a6
-
-
-
-    # permutation rank
-
-    slli a6, s4, 2
-
-    add s9, s9, a6
-
-
-
-    slli a6, s4, 1
-
-    add s9, s9, a6
-
-
-
-    slli a6, s9, 2
-
-    add s9, s9, a6
-
-
-
-    add s9, s9, s10
-
-    slli s9, s9, 2
-
-    add s9, s9, s11
-
-
-
-    # index = permutation * 81 + orientation
-
-    slli a6, s9, 6
-
-    add s8, s8, a6
-
-
-
-    slli a6, s9, 4
-
-    add s8, s8, a6
-
-
-
-    add s8, s8, s9
-
-
-
-    # nibble-packed PDB lookup
-
-    srli s9, s8, 1
-
-    add s9, s3, s9
-
-    lbu s9, 0(s9)
-
-
-
-    andi s10, s8, 1
-
-    slli s10, s10, 2
-
-    srl s9, s9, s10
-
-
-
-    andi a6, s9, 15
-
-    ret
 
 
 
