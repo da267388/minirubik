@@ -316,13 +316,13 @@ parse_mod_done:
 
 
 
-    mv a0, s0
+    # mv a0, s0
 
-    # ---- BEGIN INLINE h_a (a0 -> a6) ----
-    lbu s4, A0(a0)
-    lbu s5, A1(a0)
-    lbu s6, A2(a0)
-    lbu s7, A3(a0)
+    # ---- BEGIN INLINE h_a (s0 -> a6) ----
+    lbu s4, A0(s0)
+    lbu s5, A1(s0)
+    lbu s6, A2(s0)
+    lbu s7, A3(s0)
     andi s8, s4, 3
     slli s9, s8, 1
     add s8, s8, s9
@@ -372,22 +372,22 @@ parse_mod_done:
     andi s10, s8, 1
     slli s10, s10, 2
     srl s9, s9, s10
-    andi a6, s9, 15
+    andi t0, s9, 15
     # ---- END INLINE h_a ----
 
 
 
-    mv t0, a6            # t0 = ha
+    # mv t0, a6            # t0 = ha
 
 
 
-    # a0 still points to st[0]
+    # s0 still points to st[0]
 
-    # ---- BEGIN INLINE h_b (a0 -> a6) ----
-    lbu s4, B0(a0)
-    lbu s5, B1(a0)
-    lbu s6, B2(a0)
-    lbu s7, B3(a0)
+    # ---- BEGIN INLINE h_b (s0 -> a6) ----
+    lbu s4, B0(s0)
+    lbu s5, B1(s0)
+    lbu s6, B2(s0)
+    lbu s7, B3(s0)
     andi s8, s4, 3
     slli s9, s8, 1
     add s8, s8, s9
@@ -644,9 +644,7 @@ move:
 
     # Otherwise src = &st[d][0]
 
-    slli t6, t2, 3
-
-    add t6, s0, t6
+    addi t6, t5, -8
 
 
 
@@ -754,13 +752,13 @@ turn_begin:
 
     # h_a(child)
 
-    mv a0, t5
+    # mv a0, t5
 
-    # ---- BEGIN INLINE h_a (a0 -> a6) ----
-    lbu s4, A0(a0)
-    lbu s5, A1(a0)
-    lbu s6, A2(a0)
-    lbu s7, A3(a0)
+    # ---- BEGIN INLINE h_a (t5 -> a6) ----
+    lbu s4, A0(t5)
+    lbu s5, A1(t5)
+    lbu s6, A2(t5)
+    lbu s7, A3(t5)
     andi s8, s4, 3
     slli s9, s8, 1
     add s8, s8, s9
@@ -810,34 +808,34 @@ turn_begin:
     andi s10, s8, 1
     slli s10, s10, 2
     srl s9, s9, s10
-    andi a6, s9, 15
+    andi a7, s9, 15
     # ---- END INLINE h_a ----
 
 
 
     # a7 = ha
 
-    mv a7, a6
+    # mv a7, a6
 
 
 
     # if (g + ha > bound) continue
 
-    add t5, t6, a7
+    add s4, t6, a7
 
-    bltu t0, t5, dfsloop
+    bltu t0, s4, dfsloop
 
 
 
     # h_b(child)
 
-    # a0 remains child pointer
+    # t5 remains child pointer
 
-    # ---- BEGIN INLINE h_b (a0 -> a6) ----
-    lbu s4, B0(a0)
-    lbu s5, B1(a0)
-    lbu s6, B2(a0)
-    lbu s7, B3(a0)
+    # ---- BEGIN INLINE h_b (t5 -> a6) ----
+    lbu s4, B0(t5)
+    lbu s5, B1(t5)
+    lbu s6, B2(t5)
+    lbu s7, B3(t5)
     andi s8, s4, 3
     slli s9, s8, 1
     add s8, s8, s9
