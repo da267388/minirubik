@@ -391,7 +391,7 @@ parse_mod_done:
     andi s8, s4, 3
     slli s9, s8, 1
     add s8, s8, s9
-    andi s9, s7, 3 // B1
+    andi s9, s7, 3 # B1
     add s8, s8, s9
     slli s9, s8, 1
     add s8, s8, s9
