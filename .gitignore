@@ -19,3 +19,5 @@ d8_10.csv
 c/tables.h
 asm/solver_.s
 asm/solver_core.s
+Makefile__
+verify_cube_paths
