@@ -107,7 +107,7 @@ taken:
 
 # t0 = bound
 
-# t1 = maximum bound + 1 (12)
+# t1 = number of moves (9)
 
 # t2 = d
 
@@ -458,9 +458,9 @@ initial_h_done:
 
 
 
-    # Maximum bound = 11
+    # t1 = number of moves
 
-    li t1, 12
+    li t1, 9
 
 
 
@@ -478,7 +478,8 @@ initial_h_done:
 
 boundloop:
 
-    bgeu t0, t1, SOLVE_E_BOUND
+    li t5, 12
+    bgeu t0, t5, SOLVE_E_BOUND
 
 
 
@@ -520,9 +521,7 @@ dfsloop:
 
     # Check m before accessing move_face[m]
 
-    li t5, 9
-
-    bgeu t3, t5, exhausted
+    bgeu t3, t1, exhausted
 
 
 
@@ -544,7 +543,7 @@ dfsloop:
 
     # if same face, m += 3
 
-    bne t4, t6, check_exhausted
+    bne t4, t6, unexhausted
 
     addi t3, t3, 3
 
@@ -552,14 +551,10 @@ dfsloop:
 
     lbu t4, 3(t5)
 
+    bgeu t3, t1, exhausted
 
 
-check_exhausted:
-
-    li t5, 9
-
-    bgeu t3, t5, exhausted
-
+unexhausted:
 
 
     j move
